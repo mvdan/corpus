@@ -104,16 +104,17 @@ func mainErr() error {
 	ctx := context.Background() // TODO: ^C handling, global timeout
 
 	oneYearAgo := time.Now().UTC().Add(-time.Hour * 24 * 364) // 364 days
-	queryString := fmt.Sprintf(`archived:false is:public stars:>=100 pushed:>=%s language:go sort:stars`,
+	queryString := fmt.Sprintf(`archived:false is:public pushed:>=%s language:go sort:stars`,
 		oneYearAgo.Format("2006-01-02"))
-	vlogf("query string: %q", queryString)
+	origQueryString := queryString
 
 	var cursor *githubv4.String
+	var lastStarCount int
 	var modules []moduleStats
 moreLoop:
 	for page := 1; ; page++ {
 		if cursor == nil {
-			vlogf("querying first page of results")
+			vlogf("querying first page of results for %q", queryString)
 		} else {
 			vlogf("%d/%d done; querying page %d with cursor %s", len(modules), *flagCount, page, *cursor)
 		}
@@ -138,6 +139,7 @@ moreLoop:
 				modulePath: modfile.ModulePath([]byte(repo.GoModObj.Blob.Text)),
 				sourceURL:  repo.URL.String(),
 			}
+			lastStarCount = int(repo.StargazerCount)
 			if module.modulePath == "" {
 				vlogf("no module found in %s; skipping", module.sourceURL)
 				continue
@@ -161,9 +163,15 @@ moreLoop:
 			}
 		}
 		if !query.Search.PageInfo.HasNextPage {
-			return fmt.Errorf("ran out of repositories in search after %d pages; found %d modules", page, len(modules))
+			// GitHub's search is capped at 1k results (sigh) so
+			// just start over with the star count of the last result.
+			log.Printf("out of results at %d pages and %d modules; restarting at %d stars", page, len(modules), lastStarCount)
+
+			cursor = nil
+			queryString = fmt.Sprintf("%s stars:<%d", origQueryString, lastStarCount)
+		} else {
+			cursor = &query.Search.PageInfo.EndCursor
 		}
-		cursor = &query.Search.PageInfo.EndCursor
 	}
 
 	// TODO: Since we sort after fetching, and we only sort the query by
