@@ -86,7 +86,10 @@ type moduleStats struct {
 }
 
 func mainErr() error {
-	flag.Usage = func() { fmt.Fprintln(os.Stderr, `usage: corpus [flags]`) }
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, "usage: corpus [flags]\n\n")
+		flag.PrintDefaults()
+	}
 	flag.Parse()
 	if len(flag.Args()) > 0 {
 		flag.Usage() // we don't take any args just yet

@@ -12,6 +12,16 @@ Downloading all the source code is an exercise left to the user, but will likely
 be provided as part of the program soon. Until then, try `go get -d
 module-path@version` in a loop.
 
+### Quickstart
+
+Set up a [github access token](https://help.github.com/articles/creating-a-personal-access-token-for-the-command-line/)
+with the `public_repo` permission, and run:
+
+```sh
+export GITHUB_TOKEN=...
+go run . >output.tsv
+```
+
 ### FAQ
 
 > Measuring popularity is a bit pointless.
