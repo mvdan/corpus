@@ -1,6 +1,6 @@
 # corpus
 
-A corpus of popular Go modules. See [top-100.tsv]() for the latest sample.
+A corpus of popular Go modules. See [top-100.tsv](top-100.tsv) for the latest sample.
 
 This corpus is to be used when analyzing or studying Go code. For example, when
 one wants to change the Go language and estimate how much existing code would
