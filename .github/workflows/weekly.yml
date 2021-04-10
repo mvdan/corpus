@@ -1,0 +1,36 @@
+name: ci
+
+on:
+  schedule:
+    - cron: "0 0 * * 1"
+
+jobs:
+  weekly:
+    runs-on: ubuntu-latest
+    if: contains(github.ref, 'refs/heads/master')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.16.x
+
+      - name: Generate lists
+        run: |
+          go run . -count 10000 > top-10000.tsv
+          head -1001 top-10000.tsv > top-1000.tsv
+          head -101 top-10000.tsv > top-100.tsv
+
+      - name: Daily update
+        uses: drud/action-cross-commit@13266270ee2da98f1d16425f6ce21c235a7f33dd
+        with:
+          source-folder: .
+          destination-repository: https://mvdan:${{ secrets.GITHUB_TOKEN }}@github.com/mvdan/corpus
+          destination-folder: .
+          destination-branch: master
+          git-user: auto-updater
+          git-user-email: auto-updater@users.noreply.github.com
+          git-commit-message: "Weekly update"
+          excludes: README.md:LICENSE:.git:.github
