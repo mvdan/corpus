@@ -128,6 +128,15 @@ moreLoop:
 			"repocursor":  cursor,
 			"querystring": githubv4.String(queryString),
 		}
+
+		// When calling GraphQL APIs, there's a chance of hitting rate limits
+		// or in some cases secondary rate limits. The score of the query above is
+		// ~101 and here we sleep for 1 second in between the API calls to honor
+		// the rate limits.
+		if page > 1 {
+			time.Sleep(1 * time.Second)
+		}
+
 		if err := client.Query(ctx, &query, variables); err != nil {
 			return err
 		}
