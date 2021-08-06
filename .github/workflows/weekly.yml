@@ -23,7 +23,7 @@ jobs:
           head -1001 top-10000.tsv > top-1000.tsv
           head -101 top-10000.tsv > top-100.tsv
         env:
-          GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Weekly update
         uses: drud/action-cross-commit@13266270ee2da98f1d16425f6ce21c235a7f33dd
