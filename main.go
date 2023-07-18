@@ -108,6 +108,7 @@ func mainErr() error {
 		oneYearAgo.Format("2006-01-02"))
 	origQueryString := queryString
 
+	computedModulePaths := make(map[string]struct{})
 	var cursor *githubv4.String
 	var lastStarCount int
 	var modules []moduleStats
@@ -144,6 +145,7 @@ moreLoop:
 
 		for _, node := range query.Search.Nodes {
 			repo := node.Repository
+
 			module := moduleStats{
 				modulePath: modfile.ModulePath([]byte(repo.GoModObj.Blob.Text)),
 				sourceURL:  repo.URL.String(),
@@ -153,6 +155,13 @@ moreLoop:
 				vlogf("no module found in %s; skipping", module.sourceURL)
 				continue
 			}
+
+			// Skip if module was already computed to avoid duplicated entries
+			if _, alreadyComputed := computedModulePaths[module.modulePath]; alreadyComputed {
+				vlogf("module already computed %s; skipping", module.modulePath)
+				continue
+			}
+			computedModulePaths[module.modulePath] = struct{}{}
 
 			lastCommit := repo.DefaultBranchRef.Target.Commit
 			if lastCommit.PushedDate.Before(oneYearAgo) {
