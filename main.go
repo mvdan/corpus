@@ -46,8 +46,8 @@ type repository struct {
 	DefaultBranchRef struct {
 		Target struct {
 			Commit struct {
-				OID        githubv4.String
-				PushedDate githubv4.DateTime
+				OID           githubv4.String
+				CommittedDate githubv4.DateTime
 			} `graphql:"... on Commit"`
 		}
 	}
@@ -164,7 +164,7 @@ moreLoop:
 			computedModulePaths[module.modulePath] = struct{}{}
 
 			lastCommit := repo.DefaultBranchRef.Target.Commit
-			if lastCommit.PushedDate.Before(oneYearAgo) {
+			if lastCommit.CommittedDate.Before(oneYearAgo) {
 				// Unfortunately, github's "pushed" filter is too broad,
 				// as it includes non-default branches.
 				vlogf("no recent pushes to %s; skipping", module.sourceURL)
